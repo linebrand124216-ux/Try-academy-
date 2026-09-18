@@ -1,0 +1,9 @@
+{
+  "name": "robotics-class-registration",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend function dependencies for the live robotics class registration page",
+  "dependencies": {
+    "nodemailer": "^6.9.0"
+  }
+}

@@ -69,20 +69,30 @@ This is the key the function uses to double-check the payment really went
 through before treating it as confirmed. Never put the secret key in
 `index.html` — anything in that file is visible to every visitor.
 
-### 4. Resend (confirmation email)
-Sign up at resend.com and grab an API key. In Netlify's environment
-variables, add:
-```
-RESEND_API_KEY = re_xxxxxxxx
-```
-The `onboarding@resend.dev` sender in `verify-payment.js` works right away
-for testing. Once you verify your own domain in Resend, swap the `from`
-address in `verify-payment.js` to something like
-`Gezmo Boy <noreply@yourdomain.com>`.
+### 4. Gmail (confirmation email)
+This sends the confirmation email through your own Gmail account, using an
+App Password rather than your normal password.
 
-Using a different email provider (SendGrid, Mailgun, etc.) instead? Only the
-"2. Send the confirmation email via Resend" block inside
-`verify-payment.js` needs to change — everything else stays the same.
+1. Turn on 2-Step Verification on your Google account, if it isn't already:
+   myaccount.google.com/security → "2-Step Verification".
+2. On the same Security page, find "App passwords" → create one (choose
+   "Mail" as the app). Copy the 16-character password it gives you — it's
+   shown only once.
+3. In Netlify's environment variables, add both:
+```
+GMAIL_USER = youraddress@gmail.com
+GMAIL_APP_PASSWORD = the 16-character app password (no spaces)
+```
+Never put either value directly in `index.html` or `verify-payment.js` —
+they belong only in Netlify's environment variables.
+
+This function depends on the `nodemailer` package, listed in `package.json`
+at the project root — Netlify installs it automatically when it deploys.
+Gmail's free sending limit is 500 emails/day, far more than this needs.
+
+Want to switch to a proper email API later (e.g. once you have a domain)?
+Only the "2. Send the confirmation email" block inside `verify-payment.js`
+needs to change — everything else stays the same.
 
 ### 5. Price
 The amount is set in two places and must match exactly, or payments will
@@ -104,9 +114,9 @@ email silently not working.
 3. Leave the build command blank and the publish directory as `.` —
    there's no build step; Netlify just needs to see `netlify.toml` to
    find the function.
-4. Once it's deployed, add `PAYSTACK_SECRET_KEY` and `RESEND_API_KEY` under
-   Site settings → Environment variables, then redeploy so the function
-   picks them up.
+4. Once it's deployed, add `PAYSTACK_SECRET_KEY`, `GMAIL_USER`, and
+   `GMAIL_APP_PASSWORD` under Site settings → Environment variables, then
+   redeploy so the function picks them up.
 
 ## How it decides a payment is real
 The browser's Paystack popup only *claims* success — it's not proof, since
