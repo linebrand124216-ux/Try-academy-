@@ -143,8 +143,26 @@
   }
   .card > * { position: relative; z-index: 1; }
 
+  .card .panel-avatar {
+    position: absolute;
+    right: 20px;
+    bottom: 18px;
+    z-index: 2;
+    width: 94px;
+    height: 94px;
+    object-fit: cover;
+    object-position: center 24%;
+    border: 4px solid rgba(255,255,255,0.96);
+    border-radius: 50%;
+    box-shadow:
+      0 14px 28px rgba(93,42,30,0.24),
+      0 0 0 1px rgba(93,42,30,0.12);
+    pointer-events: none;
+  }
+
   .step { display: none; }
   .step.is-active { display: block; animation: stepIn 0.45s ease both; }
+  .step[data-step="0"] { padding-bottom: 112px; }
   @keyframes stepIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: none; }
@@ -314,6 +332,14 @@
     .app { padding: 16px 14px 40px; }
     .card { padding: 28px 20px; }
     .step h2 { font-size: 22px; }
+    .step[data-step="0"] { padding-bottom: 84px; }
+    .card .panel-avatar {
+      right: 12px;
+      bottom: 12px;
+      width: 72px;
+      height: 72px;
+      border-width: 3px;
+    }
   }
 </style>
 </head>
@@ -349,7 +375,7 @@
         <button class="back-link" data-back>Back</button>
         <p class="eyebrow">Quick question</p>
         <h2>What brought you here?</h2>
-        <p class="lede">What made you want to learn robotics from Gezmo Boy specifically?</p>
+        <p class="lede">What made you want to learn robotics from gezmo boy specifically?</p>
         <div class="field" id="field-inspiration">
           <textarea id="inspiration" placeholder="Tell me a bit about what drew you in..."></textarea>
           <div class="error">Let me know a little about what brought you here.</div>
@@ -466,6 +492,12 @@
         <p class="lede">If anything changes, this page will be here.</p>
         <button class="reconsider-link" id="reconsiderBtn">Actually — let me see the offer again</button>
       </section>
+
+      <img
+        class="panel-avatar"
+        src="data:image/webp;base64,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"
+        alt="gezmo boy"
+      />
 
     </div>
   </main>
