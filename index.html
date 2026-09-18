@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Live Robotics Class — Gezmo Boy</title>
+<meta name="description" content="A live, three-week robotics class. Monday, Wednesday, Friday." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<style>
+  /* ---------- Design tokens ---------- */
+  :root {
+    --bg: #12332B;
+    --panel: #1B4438;
+    --panel-2: #204F41;
+    --paper: #F3EFE3;
+    --ink: #EFEAE0;
+    --ink-dim: #AEC4BB;
+    --ink-dark: #142720;
+    --ink-dark-dim: #4B5F58;
+    --accent: #E0A64C;
+    --accent-dark: #B9822F;
+    --confirm: #6FCF97;
+    --decline: #E0875A;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Work Sans', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+    --shadow: 0 24px 70px -24px rgba(4, 16, 12, 0.6);
+    --maxw: 620px;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--font-body);
+    color: var(--ink);
+    background-color: var(--bg);
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23FFFFFF' stroke-opacity='0.05' stroke-width='1.5'%3E%3Cpath d='M0 30 H40 V60 H120'/%3E%3Cpath d='M20 120 V90 H90 V0'/%3E%3Cpath d='M0 100 H15'/%3E%3Cpath d='M100 0 V15'/%3E%3Ccircle cx='40' cy='60' r='3' fill='%23FFFFFF' fill-opacity='0.07' stroke='none'/%3E%3Ccircle cx='90' cy='90' r='3' fill='%23FFFFFF' fill-opacity='0.07' stroke='none'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: repeat;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 { font-family: var(--font-display); margin: 0 0 0.4em; line-height: 1.15; letter-spacing: -0.01em; }
+  p { margin: 0 0 1em; }
+  a { color: inherit; }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  /* ---------- Shell ---------- */
+  .app {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 20px 20px 60px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 6px 2px 28px;
+  }
+
+  .brand {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    color: var(--ink-dim);
+  }
+  .brand strong { color: var(--accent); font-weight: 700; }
+
+  .progress {
+    flex: 1;
+    max-width: 160px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.12);
+    overflow: hidden;
+  }
+  .progress__fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 999px;
+    transition: width 0.5s ease;
+  }
+
+  /* ---------- Stage / steps ---------- */
+  .stage {
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .card {
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 36px 32px;
+  }
+
+  .step { display: none; }
+  .step.is-active { display: block; animation: stepIn 0.45s ease both; }
+  @keyframes stepIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .step.is-active { animation: none; }
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+
+  .step h2 { font-size: 26px; color: var(--paper); }
+  .step .lede { color: var(--ink-dim); font-size: 15.5px; max-width: 46ch; }
+
+  /* ---------- Video ---------- */
+  .video-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: #0D211B;
+    margin: 20px 0 26px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .video-placeholder {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; text-align: center; padding: 20px;
+    border: 1px dashed rgba(255,255,255,0.25);
+    color: var(--ink-dim); font-size: 13.5px;
+  }
+  .video-placeholder .play {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: var(--accent); color: var(--ink-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  .schedule-chip {
+    display: inline-flex; gap: 8px; align-items: center;
+    font-family: var(--font-mono); font-size: 12.5px;
+    color: var(--ink-dim); background: rgba(255,255,255,0.06);
+    padding: 7px 12px; border-radius: 999px; margin-bottom: 4px;
+  }
+  .schedule-chip strong { color: var(--paper); font-weight: 700; }
+
+  /* ---------- Form elements ---------- */
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block; font-size: 13.5px; font-weight: 600;
+    color: var(--ink-dim); margin-bottom: 6px;
+  }
+  .field textarea,
+  .field input {
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 16px;
+    padding: 13px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.05);
+    color: var(--paper);
+  }
+  .field textarea::placeholder,
+  .field input::placeholder { color: rgba(239,234,224,0.35); }
+  .field textarea { resize: vertical; min-height: 96px; }
+  .field input:focus, .field textarea:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); }
+  .field .error {
+    display: none; color: var(--decline); font-size: 13px; margin-top: 6px;
+  }
+  .field.has-error input, .field.has-error textarea { border-color: var(--decline); }
+  .field.has-error .error { display: block; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 480px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* ---------- Buttons ---------- */
+  .actions { display: flex; align-items: center; gap: 14px; margin-top: 26px; flex-wrap: wrap; }
+  .btn {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 15.5px;
+    padding: 13px 24px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    transition: filter 0.15s ease, transform 0.15s ease;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--accent); color: var(--ink-dark); }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
+  .btn-quiet { background: transparent; color: var(--ink-dim); padding: 13px 10px; }
+  .btn-quiet:hover { color: var(--paper); }
+  .btn-decline { background: rgba(224,135,90,0.14); color: var(--decline); }
+  .btn-decline:hover { background: rgba(224,135,90,0.22); }
+
+  .back-link { font-size: 13.5px; color: var(--ink-dim); background: none; border: none; cursor: pointer; padding: 6px 0; margin-bottom: 4px; }
+  .back-link:hover { color: var(--paper); }
+
+  /* ---------- Consent / price ---------- */
+  .price-block {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius-sm);
+    padding: 22px 20px;
+    margin: 20px 0 26px;
+  }
+  .price-figure { font-family: var(--font-mono); font-size: 34px; color: var(--paper); font-weight: 700; }
+  .price-sub { color: var(--ink-dim); font-size: 14px; margin-top: 6px; }
+
+  .consent-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  /* ---------- Payment / status ---------- */
+  .summary-row { display: flex; justify-content: space-between; font-size: 14.5px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--ink-dim); }
+  .summary-row strong { color: var(--paper); font-weight: 600; }
+  .trust-note { font-size: 13px; color: var(--ink-dim); margin-top: 16px; }
+
+  .status-icon { font-size: 34px; margin-bottom: 6px; }
+  .status-message { display: none; font-size: 14px; margin-top: 14px; padding: 12px 14px; border-radius: var(--radius-sm); }
+  .status-message.is-visible { display: block; }
+  .status-message.is-error { background: rgba(224,135,90,0.14); color: var(--decline); }
+  .status-message.is-pending { background: rgba(255,255,255,0.06); color: var(--ink-dim); }
+
+  .reconsider-link { font-size: 13.5px; color: var(--ink-dim); text-decoration: underline; background: none; border: none; cursor: pointer; padding: 0; margin-top: 18px; }
+  .reconsider-link:hover { color: var(--accent); }
+
+  @media (max-width: 560px) {
+    .app { padding: 16px 14px 40px; }
+    .card { padding: 28px 20px; }
+    .step h2 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <span class="brand"><strong>Gezmo Boy</strong> · Robotics Live</span>
+    <div class="progress"><div class="progress__fill" id="progressFill"></div></div>
+  </div>
+
+  <main class="stage">
+    <div class="card">
+
+      <!-- Step 0: Video -->
+      <section class="step is-active" data-step="0">
+        <p class="eyebrow">Live · 3 weeks</p>
+        <h2>Build a robot with me — Monday, Wednesday, Friday, for three weeks.</h2>
+        <div class="schedule-chip">🗓 <strong>Mon / Wed / Fri</strong> · 3 weeks · Live on Zoom</div>
+        <div class="video-frame" id="videoFrame">
+          <div class="video-placeholder">
+            <div class="play">▶</div>
+            <span>Intro video goes here — add your video link in the code (VIDEO_EMBED_URL).</span>
+          </div>
+        </div>
+        <p class="lede">Watch this to see exactly what you'll walk away with after three weeks.</p>
+        <div class="actions">
+          <button class="btn btn-primary" data-next>Continue</button>
+        </div>
+      </section>
+
+      <!-- Step 1: Inspiration -->
+      <section class="step" data-step="1">
+        <button class="back-link" data-back>← Back</button>
+        <p class="eyebrow">Quick question</p>
+        <h2>What brought you here?</h2>
+        <p class="lede">What made you want to learn robotics from Gezmo Boy specifically?</p>
+        <div class="field" id="field-inspiration">
+          <textarea id="inspiration" placeholder="Tell me a bit about what drew you in..."></textarea>
+          <div class="error">Let me know a little about what brought you here.</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" data-next>Continue</button>
+        </div>
+      </section>
+
+      <!-- Step 2: Personal details -->
+      <section class="step" data-step="2">
+        <button class="back-link" data-back>← Back</button>
+        <p class="eyebrow">About you</p>
+        <h2>A few details</h2>
+        <div class="grid-2">
+          <div class="field" id="field-name">
+            <label for="name">Full name</label>
+            <input id="name" type="text" placeholder="Your name" />
+            <div class="error">Enter your name.</div>
+          </div>
+          <div class="field" id="field-age">
+            <label for="age">Age</label>
+            <input id="age" type="number" min="5" max="100" placeholder="e.g. 21" />
+            <div class="error">Enter a valid age.</div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="field" id="field-from">
+            <label for="from">Where are you from</label>
+            <input id="from" type="text" placeholder="e.g. Rivers State" />
+            <div class="error">Let me know where you're from.</div>
+          </div>
+          <div class="field" id="field-based">
+            <label for="based">Where are you based now</label>
+            <input id="based" type="text" placeholder="e.g. Port Harcourt" />
+            <div class="error">Let me know where you're based.</div>
+          </div>
+        </div>
+        <div class="field" id="field-email">
+          <label for="email">Email address</label>
+          <input id="email" type="email" placeholder="you@example.com" />
+          <div class="error">Enter a valid email address.</div>
+        </div>
+        <div class="grid-2">
+          <div class="field" id="field-phone">
+            <label for="phone">Phone number</label>
+            <input id="phone" type="tel" placeholder="080..." />
+            <div class="error">Enter a valid phone number.</div>
+          </div>
+          <div class="field" id="field-whatsapp">
+            <label for="whatsapp">WhatsApp number</label>
+            <input id="whatsapp" type="tel" placeholder="080..." />
+            <div class="error">Enter a valid WhatsApp number.</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" data-next id="detailsNextBtn">Continue</button>
+        </div>
+      </section>
+
+      <!-- Step 3: Consent -->
+      <section class="step" data-step="3">
+        <button class="back-link" data-back>← Back</button>
+        <p class="eyebrow">Here's the investment</p>
+        <h2>Ready to commit to the next three weeks?</h2>
+        <div class="price-block">
+          <div class="price-figure">₦50,000</div>
+          <div class="price-sub">For all three weeks — live sessions, direct feedback, and everything you need to build your first robot.</div>
+        </div>
+        <div class="consent-actions">
+          <button class="btn btn-primary" id="consentYes">Yes, I'm in</button>
+          <button class="btn btn-decline" id="consentNo">No, not right now</button>
+        </div>
+      </section>
+
+      <!-- Step 4: Payment -->
+      <section class="step" data-step="4">
+        <p class="eyebrow">Last step</p>
+        <h2>Complete your payment</h2>
+        <div class="summary-row"><span>Name</span><strong id="payName">—</strong></div>
+        <div class="summary-row"><span>Email</span><strong id="payEmail">—</strong></div>
+        <div class="summary-row"><span>Amount</span><strong>₦50,000</strong></div>
+        <div class="actions">
+          <button class="btn btn-primary" id="payBtn">Pay ₦50,000 securely</button>
+        </div>
+        <p class="trust-note">Payments are processed securely by Paystack. You'll get an email the moment your payment is confirmed.</p>
+        <div class="status-message" id="payStatus"></div>
+      </section>
+
+      <!-- Step 5: Success -->
+      <section class="step" data-step="5">
+        <div class="status-icon">🎉</div>
+        <h2>You're in!</h2>
+        <p class="lede">We've sent a confirmation to <strong id="successEmail">your email</strong>. Keep an eye on your inbox — your Zoom link and everything else you need will follow before our first session.</p>
+      </section>
+
+      <!-- Step 6: Decline reason -->
+      <section class="step" data-step="6">
+        <p class="eyebrow">Before you go</p>
+        <h2>Mind telling us why?</h2>
+        <p class="lede">It helps me build something worth saying yes to.</p>
+        <div class="field" id="field-decline">
+          <textarea id="declineReason" placeholder="What's holding you back?"></textarea>
+          <div class="error">Let me know what's on your mind.</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" id="declineSubmitBtn">Send</button>
+        </div>
+      </section>
+
+      <!-- Step 7: Decline thank you -->
+      <section class="step" data-step="7">
+        <h2>Thanks for being honest</h2>
+        <p class="lede">If anything changes, this page will be here.</p>
+        <button class="reconsider-link" id="reconsiderBtn">Actually — let me see the offer again</button>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc, doc, updateDoc, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+  // =========================================================
+  // CONFIGURE THESE before deploying — see README.md
+  // =========================================================
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyDqfl71_xPFL72xWO3Awq42RLVsEZUqcZA",
+    authDomain: "try-academy-36a1b.firebaseapp.com",
+    databaseURL: "https://try-academy-36a1b-default-rtdb.firebaseio.com",
+    projectId: "try-academy-36a1b",
+    storageBucket: "try-academy-36a1b.firebasestorage.app",
+    messagingSenderId: "635871117751",
+    appId: "1:635871117751:web:e4cd8c2125b9386751a832"
+  };
+  const PAYSTACK_PUBLIC_KEY = "pk_test_7b2f74b1d68167093ebdd1583cd25b062c49f2f6";
+  const VIDEO_EMBED_URL = ""; // e.g. "https://www.youtube.com/embed/XXXXXXXXXXX"
+  const PRICE_NGN = 50000;
+  // =========================================================
+
+  const app = initializeApp(FIREBASE_CONFIG);
+  const db = getFirestore(app);
+
+  const state = {
+    step: 0,
+    docId: null,
+    data: { inspiration: "", name: "", age: "", from: "", based: "", email: "", phone: "", whatsapp: "" }
+  };
+
+  const progressByStep = { 0: 5, 1: 20, 2: 40, 3: 60, 4: 85, 5: 100, 6: 85, 7: 100 };
+  const progressFill = document.getElementById("progressFill");
+  const steps = Array.from(document.querySelectorAll(".step"));
+
+  function showStep(index) {
+    state.step = index;
+    steps.forEach(s => s.classList.toggle("is-active", Number(s.dataset.step) === index));
+    progressFill.style.width = (progressByStep[index] || 0) + "%";
+    window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+  }
+
+  function setError(fieldId, show) {
+    document.getElementById(fieldId).classList.toggle("has-error", show);
+  }
+
+  // ---------- Video ----------
+  if (VIDEO_EMBED_URL) {
+    document.getElementById("videoFrame").innerHTML =
+      `<iframe src="${VIDEO_EMBED_URL}" title="Course intro" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+  }
+
+  // ---------- Step 0 -> 1 ----------
+  steps[0].querySelector("[data-next]").addEventListener("click", () => showStep(1));
+
+  // ---------- Step 1: inspiration ----------
+  steps[1].querySelector("[data-back]").addEventListener("click", () => showStep(0));
+  steps[1].querySelector("[data-next]").addEventListener("click", () => {
+    const val = document.getElementById("inspiration").value.trim();
+    if (val.length < 3) { setError("field-inspiration", true); return; }
+    setError("field-inspiration", false);
+    state.data.inspiration = val;
+    showStep(2);
+  });
+
+  // ---------- Step 2: details ----------
+  steps[2].querySelector("[data-back]").addEventListener("click", () => showStep(1));
+  document.getElementById("detailsNextBtn").addEventListener("click", async (e) => {
+    const fields = [
+      ["name", "field-name", v => v.trim().length > 1],
+      ["age", "field-age", v => v && Number(v) >= 5 && Number(v) <= 100],
+      ["from", "field-from", v => v.trim().length > 1],
+      ["based", "field-based", v => v.trim().length > 1],
+      ["email", "field-email", v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())],
+      ["phone", "field-phone", v => v.replace(/\D/g, "").length >= 7],
+      ["whatsapp", "field-whatsapp", v => v.replace(/\D/g, "").length >= 7]
+    ];
+    let ok = true;
+    fields.forEach(([id, fieldId, test]) => {
+      const val = document.getElementById(id).value;
+      const valid = test(val);
+      setError(fieldId, !valid);
+      if (!valid) ok = false;
+      else state.data[id] = val.trim();
+    });
+    if (!ok) return;
+
+    e.target.disabled = true;
+    e.target.textContent = "Saving...";
+    try {
+      const docRef = await addDoc(collection(db, "liveClassRegistrations"), {
+        ...state.data,
+        status: "in_progress",
+        createdAt: serverTimestamp()
+      });
+      state.docId = docRef.id;
+    } catch (err) {
+      console.error("Could not save registration:", err);
+      // Non-fatal — still let them continue through the flow.
+    }
+    e.target.disabled = false;
+    e.target.textContent = "Continue";
+    showStep(3);
+  });
+
+  // ---------- Step 3: consent ----------
+  steps[3].querySelector("[data-back]").addEventListener("click", () => showStep(2));
+
+  async function updateLead(fields) {
+    if (!state.docId) return;
+    try { await updateDoc(doc(db, "liveClassRegistrations", state.docId), fields); }
+    catch (err) { console.error("Could not update registration:", err); }
+  }
+
+  document.getElementById("consentYes").addEventListener("click", () => {
+    updateLead({ consent: true });
+    document.getElementById("payName").textContent = state.data.name;
+    document.getElementById("payEmail").textContent = state.data.email;
+    showStep(4);
+  });
+
+  document.getElementById("consentNo").addEventListener("click", () => {
+    updateLead({ consent: false });
+    showStep(6);
+  });
+
+  // ---------- Step 4: payment ----------
+  const payStatus = document.getElementById("payStatus");
+  function setPayStatus(msg, kind) {
+    payStatus.textContent = msg;
+    payStatus.className = "status-message" + (msg ? " is-visible" : "") + (kind ? " is-" + kind : "");
+  }
+
+  document.getElementById("payBtn").addEventListener("click", () => {
+    if (typeof PaystackPop === "undefined") {
+      setPayStatus("Payment couldn't load. Please refresh and try again.", "error");
+      return;
+    }
+    const reference = "REG_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
+    const handler = PaystackPop.setup({
+      key: PAYSTACK_PUBLIC_KEY,
+      email: state.data.email,
+      amount: PRICE_NGN * 100,
+      currency: "NGN",
+      ref: reference,
+      metadata: { name: state.data.name, phone: state.data.phone },
+      callback: function (response) {
+        verifyPayment(response.reference);
+      },
+      onClose: function () {
+        setPayStatus("No worries — click the button above whenever you're ready.", "pending");
+      }
+    });
+    handler.openIframe();
+  });
+
+  async function verifyPayment(reference) {
+    setPayStatus("Confirming your payment...", "pending");
+    try {
+      const res = await fetch("/.netlify/functions/verify-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reference, registrant: state.data })
+      });
+      const result = await res.json();
+      if (result.verified) {
+        await updateLead({ status: "paid", paidAt: serverTimestamp(), paystackReference: reference });
+        document.getElementById("successEmail").textContent = state.data.email;
+        setPayStatus("", "");
+        showStep(5);
+      } else {
+        setPayStatus("We couldn't confirm this payment yet. If you were charged, contact us with reference " + reference + ".", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      setPayStatus("Something went wrong confirming your payment. If you were charged, contact us with reference " + reference + ".", "error");
+    }
+  }
+
+  // ---------- Step 6: decline reason ----------
+  document.getElementById("declineSubmitBtn").addEventListener("click", async (e) => {
+    const val = document.getElementById("declineReason").value.trim();
+    if (val.length < 2) { setError("field-decline", true); return; }
+    setError("field-decline", false);
+    e.target.disabled = true;
+    e.target.textContent = "Sending...";
+    await updateLead({ declineReason: val });
+    e.target.disabled = false;
+    e.target.textContent = "Send";
+    showStep(7);
+  });
+
+  document.getElementById("reconsiderBtn").addEventListener("click", () => showStep(3));
+
+  showStep(0);
+</script>
+</body>
+</html>
