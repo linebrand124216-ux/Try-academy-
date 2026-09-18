@@ -3,15 +3,21 @@
 // Called by the browser after Paystack's popup reports a successful charge.
 // This function re-checks the payment with Paystack directly (using the
 // SECRET key, which never touches the browser) before trusting it, then
-// sends the "payment received" email.
+// sends the "payment received" email through your own Gmail account.
 //
 // Required environment variables (set these in the Netlify dashboard —
 // Site settings > Environment variables — never in this file):
 //   PAYSTACK_SECRET_KEY   e.g. sk_live_xxxxxxxx or sk_test_xxxxxxxx
-//   RESEND_API_KEY        from https://resend.com
+//   GMAIL_USER            your full Gmail address, e.g. you@gmail.com
+//   GMAIL_APP_PASSWORD    a 16-character App Password (not your regular
+//                          Gmail password) — generate one at
+//                          myaccount.google.com/security under
+//                          "2-Step Verification" > "App passwords"
 //
-// Uses Node's built-in fetch (Node 18+, which is Netlify's current default),
-// so there are no extra dependencies to install.
+// This function needs the "nodemailer" package (declared in package.json
+// at the project root) — Netlify installs it automatically during deploy.
+
+const nodemailer = require("nodemailer");
 
 const EXPECTED_AMOUNT_KOBO = 50000 * 100; // ₦50,000 — keep in sync with index.html's PRICE_NGN
 
@@ -47,18 +53,19 @@ exports.handler = async (event) => {
       return { statusCode: 400, body: JSON.stringify({ verified: false, message: "Payment could not be verified" }) };
     }
 
-    // 2. Send the confirmation email via Resend.
-    //    onboarding@resend.dev works out of the box for testing; once you
-    //    verify your own domain in Resend, swap the "from" address below.
-    const emailRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        from: "Gezmo Boy Robotics Class <onboarding@resend.dev>",
-        to: [registrant.email],
+    // 2. Send the confirmation email through Gmail.
+    try {
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.GMAIL_USER,
+          pass: process.env.GMAIL_APP_PASSWORD
+        }
+      });
+
+      await transporter.sendMail({
+        from: `"Gezmo Boy Robotics Class" <${process.env.GMAIL_USER}>`,
+        to: registrant.email,
         subject: "Payment received — your spot is confirmed",
         html: `
           <p>Hi ${escapeHtml(registrant.name || "there")},</p>
@@ -66,14 +73,12 @@ exports.handler = async (event) => {
           <p>Sessions run live on Zoom every <strong>Monday, Wednesday and Friday</strong> for three weeks. Your Zoom link and everything else you need will be sent to this email before the first session.</p>
           <p>Talk soon,<br/>Gezmo Boy</p>
         `
-      })
-    });
-
-    if (!emailRes.ok) {
+      });
+    } catch (emailErr) {
       // Payment is genuinely verified even if the email failed to send —
       // don't tell the registrant their payment failed. Log it so it can be
       // followed up manually.
-      console.error("Payment verified but email failed:", await emailRes.text());
+      console.error("Payment verified but email failed:", emailErr);
     }
 
     return { statusCode: 200, body: JSON.stringify({ verified: true }) };
