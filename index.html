@@ -342,6 +342,50 @@
     }
   }
 </style>
+<style>
+  /* ---------- Two-button intro ---------- */
+  .btn-secondary { background: transparent; color: #5D2A1E; border: 2px solid #5D2A1E; padding: 11px 22px; }
+  .btn-secondary:hover { background: rgba(93,42,30,0.08); }
+
+  /* ---------- One-on-one flow ---------- */
+  .card.is-oo .panel-avatar { display: none; }
+  .hero-photo {
+    display: block; width: 132px; height: 132px; margin: 0 auto 18px;
+    object-fit: cover; object-position: center 24%;
+    border: 4px solid rgba(255,255,255,0.96); border-radius: 50%;
+    box-shadow: 0 16px 34px rgba(93,42,30,0.26), 0 0 0 1px rgba(93,42,30,0.12);
+  }
+  .step[data-step="10"] { text-align: center; }
+  .step[data-step="10"] .lede { margin-left: auto; margin-right: auto; }
+  .step[data-step="10"] .actions { justify-content: center; }
+  .step[data-step="10"] .back-link { display: block; margin-right: auto; text-align: left; }
+  .perks { list-style: none; padding: 0; margin: 18px auto 4px; max-width: 420px; text-align: left; }
+  .perks li { position: relative; padding: 8px 0 8px 28px; font-size: 15px; color: #5D2A1E; border-bottom: 1px solid rgba(93,42,30,0.12); }
+  .perks li:last-child { border-bottom: 0; }
+  .perks li::before {
+    content: ""; position: absolute; left: 4px; top: 13px; width: 6px; height: 11px;
+    border-right: 2px solid var(--confirm); border-bottom: 2px solid var(--confirm); transform: rotate(45deg);
+  }
+  .choices { display: grid; gap: 10px; }
+  .choice {
+    display: flex; align-items: center; gap: 12px; padding: 13px 14px;
+    border-radius: var(--radius-sm); border: 1px solid #CBD5E1; background: #FFFFFF; color: #5D2A1E;
+    font-size: 15px; cursor: pointer; text-align: left; width: 100%; font-family: var(--font-body);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+  .choice:hover { border-color: var(--accent); }
+  .choice .mark { flex: 0 0 18px; width: 18px; height: 18px; border: 2px solid #CBD5E1; border-radius: 50%; position: relative; background: #FFF; }
+  .choice.is-multi .mark { border-radius: 5px; }
+  .choice.is-selected { border-color: #5D2A1E; background: #FFF8F2; box-shadow: 0 0 0 3px rgba(93,42,30,0.10); }
+  .choice.is-selected .mark { border-color: #5D2A1E; background: #5D2A1E; }
+  .choice.is-selected .mark::after {
+    content: ""; position: absolute; left: 4px; top: 0; width: 4px; height: 9px;
+    border-right: 2px solid #FFF; border-bottom: 2px solid #FFF; transform: rotate(45deg);
+  }
+  .field.has-error .choices { outline: 1px solid var(--decline); outline-offset: 4px; border-radius: var(--radius-sm); }
+  .recap { background: var(--panel-2); border: 1px solid #E2E8F0; border-radius: var(--radius-sm); padding: 6px 16px; margin: 18px 0 8px; }
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -367,6 +411,7 @@
         <p class="lede">Watch this to see exactly what you'll walk away with after three weeks.</p>
         <div class="actions">
           <button class="btn btn-primary" data-next>Join the wait list</button>
+          <button class="btn btn-secondary" id="ooStartBtn">One-on-one class</button>
         </div>
       </section>
 
@@ -493,6 +538,236 @@
         <button class="reconsider-link" id="reconsiderBtn">Actually — let me see the offer again</button>
       </section>
 
+      <!-- One-on-one · Step 10: Intro (photo on top) -->
+      <section class="step" data-step="10">
+        <button class="back-link" data-back>Back</button>
+        <img class="hero-photo" id="oo-heroPhoto" alt="gezmo boy" />
+        <p class="eyebrow">One-on-one · 4 weeks</p>
+        <h2>Learn robotics with me, just you and gezmo boy.</h2>
+        <div class="schedule-chip"><strong>3 sessions a week</strong> · 4 weeks · Private, live</div>
+        <ul class="perks">
+          <li>12 private sessions built around your goal</li>
+          <li>Your pace, your project, your questions</li>
+          <li>Direct feedback from me between sessions</li>
+        </ul>
+        <div class="actions">
+          <button class="btn btn-primary" data-next>Start my application</button>
+        </div>
+      </section>
+
+      <!-- Step 1: Goal -->
+      <section class="step" data-step="11">
+        <button class="back-link" data-back>Back</button>
+        <p class="eyebrow">Your goal</p>
+        <h2>What do you want to build or achieve?</h2>
+        <p class="lede">By the end of four weeks, what should you be able to do?</p>
+        <div class="field" id="oo-field-goal">
+          <textarea id="oo-goal" placeholder="e.g. Build a smart home sensor system and understand how it works..."></textarea>
+          <div class="error">Tell me a little about your goal.</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" data-next>Continue</button>
+        </div>
+      </section>
+
+      <!-- Step 2: Experience + hardware -->
+      <section class="step" data-step="12">
+        <button class="back-link" data-back>Back</button>
+        <p class="eyebrow">Your level</p>
+        <h2>Where are you starting from?</h2>
+
+        <div class="field" id="oo-field-level">
+          <label>Your experience</label>
+          <div class="choices" data-group="level">
+            <button type="button" class="choice" data-value="Complete beginner"><span class="mark"></span>Complete beginner</button>
+            <button type="button" class="choice" data-value="Tinkered a bit (Arduino, sensors, LEDs)"><span class="mark"></span>I've tinkered a bit (Arduino, sensors, LEDs)</button>
+            <button type="button" class="choice" data-value="Built projects, want to go deeper"><span class="mark"></span>I've built projects, want to go deeper</button>
+            <button type="button" class="choice" data-value="Student with a class or project deadline"><span class="mark"></span>I'm a student with a class or project deadline</button>
+          </div>
+          <div class="error">Pick the one that fits you best.</div>
+        </div>
+
+        <div class="field" id="oo-field-hardware">
+          <label>Do you own a board or kit (Arduino, ESP32, other)?</label>
+          <div class="choices" data-group="hardware">
+            <button type="button" class="choice" data-value="Yes"><span class="mark"></span>Yes, I have one</button>
+            <button type="button" class="choice" data-value="No"><span class="mark"></span>No, not yet</button>
+            <button type="button" class="choice" data-value="Not sure what to buy"><span class="mark"></span>Not sure what to buy</button>
+          </div>
+          <div class="error">Let me know so I can plan your sessions.</div>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" data-next>Continue</button>
+        </div>
+      </section>
+
+      <!-- Step 3: Focus + project -->
+      <section class="step" data-step="13">
+        <button class="back-link" data-back>Back</button>
+        <p class="eyebrow">Your focus</p>
+        <h2>What should we focus on?</h2>
+
+        <div class="field" id="oo-field-focus">
+          <label>Pick all that apply</label>
+          <div class="choices" data-group="focus" data-multi="true">
+            <button type="button" class="choice is-multi" data-value="Arduino basics"><span class="mark"></span>Arduino basics</button>
+            <button type="button" class="choice is-multi" data-value="Sensors and electronics"><span class="mark"></span>Sensors and electronics</button>
+            <button type="button" class="choice is-multi" data-value="IoT and connectivity"><span class="mark"></span>IoT and connectivity</button>
+            <button type="button" class="choice is-multi" data-value="Robotics"><span class="mark"></span>Robotics</button>
+            <button type="button" class="choice is-multi" data-value="A project of my own"><span class="mark"></span>A project of my own</button>
+          </div>
+          <div class="error">Pick at least one.</div>
+        </div>
+
+        <div class="field" id="oo-field-project">
+          <label for="oo-project">A project you'd like to work on (optional)</label>
+          <textarea id="oo-project" placeholder="Describe your idea, even if it's rough..."></textarea>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" data-next>Continue</button>
+        </div>
+      </section>
+
+      <!-- Step 4: Schedule + details -->
+      <section class="step" data-step="14">
+        <button class="back-link" data-back>Back</button>
+        <p class="eyebrow">Schedule and details</p>
+        <h2>When can we meet?</h2>
+        <p class="lede">We'll have 3 sessions every week for 4 weeks. Tell me what works for you.</p>
+
+        <div class="field" id="oo-field-schedule">
+          <label for="oo-schedule">Days and times that work best</label>
+          <textarea id="oo-schedule" placeholder="e.g. Mon, Wed, Fri evenings after 6pm (WAT)"></textarea>
+          <div class="error">Tell me when you're usually free.</div>
+        </div>
+
+        <div class="field" id="oo-field-connection">
+          <label>Can you join on Zoom or Google Meet with a stable connection?</label>
+          <div class="choices" data-group="connection">
+            <button type="button" class="choice" data-value="Yes"><span class="mark"></span>Yes</button>
+            <button type="button" class="choice" data-value="Sometimes"><span class="mark"></span>Sometimes</button>
+            <button type="button" class="choice" data-value="Data is a challenge"><span class="mark"></span>Data is a challenge</button>
+          </div>
+          <div class="error">Pick one.</div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field" id="oo-field-name">
+            <label for="oo-name">Full name</label>
+            <input id="oo-name" type="text" placeholder="Your name" />
+            <div class="error">Please enter your name.</div>
+          </div>
+          <div class="field" id="oo-field-age">
+            <label for="oo-age">Age</label>
+            <input id="oo-age" type="number" min="5" max="100" placeholder="e.g. 21" />
+            <div class="error">Enter a valid age.</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field" id="oo-field-from">
+            <label for="oo-from">Where are you from</label>
+            <input id="oo-from" type="text" placeholder="e.g. Rivers State" />
+            <div class="error">Required.</div>
+          </div>
+          <div class="field" id="oo-field-based">
+            <label for="oo-based">Where are you based now</label>
+            <input id="oo-based" type="text" placeholder="e.g. Port Harcourt" />
+            <div class="error">Required.</div>
+          </div>
+        </div>
+
+        <div class="field" id="oo-field-email">
+          <label for="oo-email">Email address</label>
+          <input id="oo-email" type="email" placeholder="you@example.com" />
+          <div class="error">Enter a valid email.</div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field" id="oo-field-phone">
+            <label for="oo-phone">Phone number</label>
+            <input id="oo-phone" type="tel" placeholder="080..." />
+            <div class="error">Enter a valid phone number.</div>
+          </div>
+          <div class="field" id="oo-field-whatsapp">
+            <label for="oo-whatsapp">WhatsApp number</label>
+            <input id="oo-whatsapp" type="tel" placeholder="080..." />
+            <div class="error">Enter a valid WhatsApp number.</div>
+          </div>
+        </div>
+
+        <div class="field" id="oo-field-notes">
+          <label for="oo-notes">Anything else I should know? (optional)</label>
+          <textarea id="oo-notes" placeholder="Anything that would help me teach you better..."></textarea>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" data-next id="oo-detailsNextBtn">Continue</button>
+        </div>
+      </section>
+
+      <!-- Step 5: Consent / price -->
+      <section class="step" data-step="15">
+        <button class="back-link" data-back>Back</button>
+        <p class="eyebrow">Here's the investment</p>
+        <h2>Ready to commit to one-on-one?</h2>
+        <div class="price-block">
+          <div class="price-figure">₦100,000</div>
+          <div class="price-sub">Four weeks, three private sessions every week (12 sessions), plus direct feedback between sessions. Just you and me.</div>
+        </div>
+        <div class="consent-actions">
+          <button class="btn btn-primary" id="oo-consentYes">Yes, I'm in</button>
+          <button class="btn btn-decline" id="oo-consentNo">No, not right now</button>
+        </div>
+      </section>
+
+      <!-- Step 6: Payment -->
+      <section class="step" data-step="16">
+        <p class="eyebrow">Last step</p>
+        <h2>Complete your payment</h2>
+        <div class="recap">
+          <div class="summary-row"><span>Name</span><strong id="oo-payName">-</strong></div>
+          <div class="summary-row"><span>Email</span><strong id="oo-payEmail">-</strong></div>
+          <div class="summary-row"><span>Plan</span><strong>One-on-one · 4 weeks · 3x weekly</strong></div>
+          <div class="summary-row"><span>Amount</span><strong>₦100,000</strong></div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" id="oo-payBtn">Pay ₦100,000 securely</button>
+        </div>
+        <div class="status-message" id="oo-payStatus"></div>
+        <p class="trust-note">Payments are processed securely by Paystack. You'll get an email the moment your payment is confirmed.</p>
+      </section>
+
+      <!-- Step 7: Success -->
+      <section class="step" data-step="17">
+        <div class="status-icon"></div>
+        <h2>You're in!</h2>
+        <p class="lede">We've sent a confirmation to <strong id="oo-successEmail">your email</strong>. I'll reach out on WhatsApp to lock in your three weekly session times before we start.</p>
+      </section>
+
+      <!-- Step 8: Decline reason -->
+      <section class="step" data-step="18">
+        <p class="eyebrow">Before you go</p>
+        <h2>Mind telling us why?</h2>
+        <p class="lede">It helps me build something worth saying yes to.</p>
+        <div class="field" id="oo-field-decline">
+          <textarea id="oo-declineReason" placeholder="What's holding you back?"></textarea>
+          <div class="error">A short note is enough.</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" id="oo-declineSubmitBtn">Send</button>
+        </div>
+      </section>
+
+      <!-- Step 9: Decline thank you -->
+      <section class="step" data-step="19">
+        <h2>Thanks for being honest</h2>
+        <p class="lede">If anything changes, this page will be here.</p>
+        <button class="reconsider-link" id="oo-reconsiderBtn">Actually, let me see the offer again</button>
+      </section>
+
       <img
         class="panel-avatar"
         src="data:image/webp;base64,UklGRh4IAABXRUJQVlA4IBIIAACwLACdASqgAKAAPpVCnUuloyKvJnDbMeASiUDgzwAQoooMJV+lHfdOXBKrt++db08FQ7EHR1Isr710QAyW2ZbhjBbSJPGLcZUyMUZn4974eihnE+BfuClwOV+hw5Fj7Qhq5uEGe9isdibvKn3TY3JTsvbyh/kHrIygG+v/J7rbBNLmyAMHzfw5afapBLLSoH038y61F0Sp8NulKNWmdzodqOSFv+1PxDCHXmmHv/2G57C6Yogoqo1Cvfzv0twhNivjcofK/q0TAiHB4qPQm3CXzRXXGhNfpx4hzeqdPkGLO6dcKCsHA7LILvvrlGIB1BkXXs/FdyKFeFmLbE7wugbtH8izL1j6vCIZKelX5FsoStJa227JG6xTT7URvZicXmGJV7Vj/ezG9u1XRV+nFNDfXZozShjGkTHmRbSYVuS36A4IdF0HNF8V1vvXHyTPM+b4QTn+6H1K85PXVOmR9dGX/Tu4XY4/kURAq5OOpQAA/vI5U/euF9NlV+LtSbCwF/43h26nSIrMg/O2JyNyims0iMaInXA/9K6zMOt8k2F2j31G0ppkzyz4iEcSJJZfNA/QulL8oYOfG/iOtIgq0hsg9ZbHH9noKOQfCXF255WnF+SKbAfyHAw8lcD1ivtpAM9rbJn300PoohJrcPctkMZCfhdXRVa2BD7kN4pbr+YsAfyuCqHJFr0tqlo6wziqZQt87zYuIJ9J0F0GlpWy6g1IqEi9cMLOaTFYOaZsnzIrbNp5mmnQX/Hhweee7qRKG+yCWcXLGAXTz87VDDa8bd4XhuwyH8gvhFIorSjYNyWDUDToQFe4o+/1If6/Ph4qefk7ZvhRsbc5HcMIP35Yb14PaWan9rntqSlScadCVVqKMh+kbdSvt0CTww/VnDYaHze0LqeSd7vM8Sp03EpvxA5DrjG1Ed/jdNz5g1CtNYN9TR/VV5BcT5Q82joHeB3yiC/+mTiU68mxi18QJ5nNIudn6CCBsN6DoW9DpymNhqNhWm5Yb6smfbSaahdOgjNgyru1C5aksN3wYuvW6hZvaIy9AdvQDB5Z/VGT7JoIZArqHSlfzPIhJ9Gk8EiV9NjR9LwdqXGVp2B6FvzJfZOvpDwagE8ftJN6aTn+ZBDWSIv+VooqAfoV7MZmesZ6HORlyAYIn5S7wQfmNapE2/t8U2sWVCHY7qRqvmps5Vde6bWy0oG/WCZK87d/N1Z9Zgcfgm7XeiBVX0I2ooZlAj7Un3lY4hVdE8FvpQJonWuI7ujf/yqDNwuUMCZf7AhKDmiI/NuGzwmo38IhDccm9zg4grVhb6ROrKuwBLOlbZSk3qVSkc4/vKXY47G1NVnLi6vI920tBnxI0kizjwiC1HpThLdWeumfpN/Q3gokOWtrqDeAUzchxWk9efo+9H1DaoMUaY3Y5NuS8EmbTZ1Hhf4fTIX/I807JPBTHv/QL0DH/t2Q0u6lKH9WaRDDOgR0EQl2sa9RhBCLWJyWS5E0gWSTNwYHBXL7E31ZL5bmFASbzm5+Xxk7HURMFmFyjTdW24u7B8WWj3daJQw/eeVTaj4fNWe/9ZFH5/q6QTvXlym/2D9PASigbgtjoI187Ivtq+RrSjYChS+MklLJ59Uq9lMhu/7b49N1FghK9btwDPSxu1IXJwmKDlkxYmujd1oKnZZ1gR2CnTgjWOZTgqNLBa3oMrOzPt++CaPSLSYqTv+Zh6C3KPhDjh3Tc2w/Kr+lbt8qD/2nD37WNlwYZm3vAmGwAZk8RbxiysE5TYtEG+OjCQI7uZfzBSArVESBse4gg/yZhMOVW2mfupPDKCg2qjAcgOuxqQo4UbFVZlcntOogOOtlXrkKZM3kTzA94tEoSUYk73AkkkJvZjwU/CdUM23LB4hyt9SwHJBkEtIHS3NOO3tqPEOPIginSlZHUry5zEXoCMIEUtxssJm8S+AP2ht+xXtjKhnyhRvwTafcqqHWPGky2sNz1xpWmuRO/aVlqg5bRQgwlesMUnLG3FZ2YrBotNiT5m/l4i45i50FW+tTnQCbs1WeRfNQ1T2dU30NTZvvuaYwhdQx5x+KTrcjM1UhC1pUFrZaW7BzydwhIm0FA/6FpRSR5D9aoPhR4cEUNaP7+G/l99Hhz4BkI9Dltzdst4+Ok4XwCqTyGULX74z5xXYXQNpqnleMGL+dNqsbHU39MQ9IFlW6yd77Of+1RWljS5UhaEoy8igS+S2nZA0TzGrTN4aLtR5MiQ7pRKMLtMwMl/zoD1S03M4jtyqWQkQldZ8V7UV0oDSKCW4zsUl/vrm5bvCU3eMFPk/8Zp1uTopRBnrhPxRItklHYlqtYtb9YkvDfPJs+hTmUT3DxDzritJ1xSQ16XBI0Qw1dKl8bA/BlXGRaEDo2lpd8V5jOWSdFCzuPFcV6GiJyZY/VwJkiyxsBGzbnuLEFN8/2g5Mr/KGjKNXrYPvHMg/MFA+aF+0/63OAYH46uTRdJY/UC7wW5Uj0oHQcTXrKVUToWXAbz8thX1NInFAYOngn0kaiB8KI/lrQDQsrdbfx8m8TIqKEo2sgczsNEJsrQ7vvttm39niON7S/UNO2dM1WIhLmHu0U6WnRr1/eXsomaUOy0IuPecR4OXBOKmJmqPXNJU91ZZYq21TM8m/9g1NdUeQyHNYu0ffIGcI0FiW57p2IE3FORqTLdPOzW42zxotZRjE9mQumTy83xwY95LxYzsZDaiFi72eUzNyo7BfXjjYGDI1N8GrxaWJ6wBZv3AKDys1FQQ/bhBgAA=="
@@ -513,13 +788,13 @@
   // CONFIGURE THESE before deploying — see README.md
   // =========================================================
   const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyDqfl71_xPFL72xWO3Awq42RLVsEZUqcZA",
-    authDomain: "try-academy-36a1b.firebaseapp.com",
-    databaseURL: "https://try-academy-36a1b-default-rtdb.firebaseio.com",
-    projectId: "try-academy-36a1b",
-    storageBucket: "try-academy-36a1b.firebasestorage.app",
-    messagingSenderId: "635871117751",
-    appId: "1:635871117751:web:e4cd8c2125b9386751a832"
+    apiKey: "AIzaSyA0H6c1Pz4XHCSmQTsfS4--Ba_qZOo3DkI",
+    authDomain: "try-academy-ac34a.firebaseapp.com",
+    databaseURL: "https://try-academy-ac34a-default-rtdb.firebaseio.com",
+    projectId: "try-academy-ac34a",
+    storageBucket: "try-academy-ac34a.firebasestorage.app",
+    messagingSenderId: "589388375542",
+    appId: "1:589388375542:web:a327afab1ae95f4fbf13d7"
   };
   const PAYSTACK_PUBLIC_KEY = "pk_test_7b2f74b1d68167093ebdd1583cd25b062c49f2f6";
   const VIDEO_EMBED_URL = "https://www.youtube.com/embed/6nEfnHa6IV4"; // e.g. "https://www.youtube.com/embed/XXXXXXXXXXX"
@@ -535,7 +810,10 @@
     data: { inspiration: "", name: "", age: "", from: "", based: "", email: "", phone: "", whatsapp: "" }
   };
 
-  const progressByStep = { 0: 5, 1: 20, 2: 40, 3: 60, 4: 85, 5: 100, 6: 85, 7: 100 };
+  const progressByStep = {
+    0: 5, 1: 20, 2: 40, 3: 60, 4: 85, 5: 100, 6: 85, 7: 100,
+    10: 8, 11: 20, 12: 34, 13: 48, 14: 62, 15: 78, 16: 90, 17: 100, 18: 90, 19: 100
+  };
   const progressFill = document.getElementById("progressFill");
   const steps = Array.from(document.querySelectorAll(".step"));
 
@@ -543,6 +821,7 @@
     state.step = index;
     steps.forEach(s => s.classList.toggle("is-active", Number(s.dataset.step) === index));
     progressFill.style.width = (progressByStep[index] || 0) + "%";
+    document.querySelector(".card").classList.toggle("is-oo", index >= 10);
     window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
   }
 
@@ -596,6 +875,7 @@
     try {
       const docRef = await addDoc(collection(db, "liveClassRegistrations"), {
         ...state.data,
+        plan: "group",
         status: "in_progress",
         createdAt: serverTimestamp()
       });
@@ -697,6 +977,218 @@
   });
 
   document.getElementById("reconsiderBtn").addEventListener("click", () => showStep(3));
+
+
+  // =========================================================
+  // ONE-ON-ONE FLOW (steps 10 to 19)
+  // =========================================================
+  const OO_PRICE_NGN = 100000;
+  const OO_COLLECTION = "liveClassRegistrations"; // same collection as the group class, told apart by the "plan" field
+  const ooEl = (id) => document.getElementById("oo-" + id);
+  const ooStep = (n) => steps.find(s => Number(s.dataset.step) === n);
+  const oo = {
+    docId: null,
+    data: {
+      goal: "", level: "", hardware: "", focus: [], project: "",
+      schedule: "", connection: "", name: "", age: "", from: "", based: "",
+      email: "", phone: "", whatsapp: "", notes: ""
+    }
+  };
+
+  // Photo at the top reuses the same image as the corner avatar
+  ooEl("heroPhoto").src = document.querySelector(".panel-avatar").src;
+
+  // Entry from the main intro
+  document.getElementById("ooStartBtn").addEventListener("click", () => showStep(10));
+
+  // Choice buttons (single + multi select)
+  document.querySelectorAll(".choices").forEach(group => {
+    const multi = group.dataset.multi === "true";
+    group.addEventListener("click", (e) => {
+      const btn = e.target.closest(".choice");
+      if (!btn) return;
+      if (multi) {
+        btn.classList.toggle("is-selected");
+      } else {
+        group.querySelectorAll(".choice").forEach(c => c.classList.remove("is-selected"));
+        btn.classList.add("is-selected");
+      }
+      group.closest(".field").classList.remove("has-error");
+    });
+  });
+  function ooChoice(groupName) {
+    const group = document.querySelector('.choices[data-group="' + groupName + '"]');
+    const picked = Array.from(group.querySelectorAll(".choice.is-selected")).map(c => c.dataset.value);
+    return group.dataset.multi === "true" ? picked : (picked[0] || "");
+  }
+
+  // Step 10: intro
+  ooStep(10).querySelector("[data-back]").addEventListener("click", () => showStep(0));
+  ooStep(10).querySelector("[data-next]").addEventListener("click", () => showStep(11));
+
+  // Step 11: goal
+  ooStep(11).querySelector("[data-back]").addEventListener("click", () => showStep(10));
+  ooStep(11).querySelector("[data-next]").addEventListener("click", () => {
+    const val = ooEl("goal").value.trim();
+    if (val.length < 3) { setError("oo-field-goal", true); return; }
+    setError("oo-field-goal", false);
+    oo.data.goal = val;
+    showStep(12);
+  });
+
+  // Step 12: level + hardware
+  ooStep(12).querySelector("[data-back]").addEventListener("click", () => showStep(11));
+  ooStep(12).querySelector("[data-next]").addEventListener("click", () => {
+    const level = ooChoice("level");
+    const hardware = ooChoice("hardware");
+    setError("oo-field-level", !level);
+    setError("oo-field-hardware", !hardware);
+    if (!level || !hardware) return;
+    oo.data.level = level;
+    oo.data.hardware = hardware;
+    showStep(13);
+  });
+
+  // Step 13: focus + project
+  ooStep(13).querySelector("[data-back]").addEventListener("click", () => showStep(12));
+  ooStep(13).querySelector("[data-next]").addEventListener("click", () => {
+    const focus = ooChoice("focus");
+    setError("oo-field-focus", focus.length === 0);
+    if (focus.length === 0) return;
+    oo.data.focus = focus;
+    oo.data.project = ooEl("project").value.trim();
+    showStep(14);
+  });
+
+  // Step 14: schedule + contact details
+  ooStep(14).querySelector("[data-back]").addEventListener("click", () => showStep(13));
+  ooEl("detailsNextBtn").addEventListener("click", async (e) => {
+    const connection = ooChoice("connection");
+    setError("oo-field-connection", !connection);
+    const fields = [
+      ["schedule", v => v.trim().length > 2],
+      ["name", v => v.trim().length > 1],
+      ["age", v => v && Number(v) >= 5 && Number(v) <= 100],
+      ["from", v => v.trim().length > 1],
+      ["based", v => v.trim().length > 1],
+      ["email", v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())],
+      ["phone", v => v.replace(/\D/g, "").length >= 7],
+      ["whatsapp", v => v.replace(/\D/g, "").length >= 7]
+    ];
+    let ok = !!connection;
+    fields.forEach(([id, test]) => {
+      const val = ooEl(id).value;
+      const valid = test(val);
+      setError("oo-field-" + id, !valid);
+      if (!valid) ok = false;
+      else oo.data[id] = val.trim();
+    });
+    if (!ok) return;
+    oo.data.connection = connection;
+    oo.data.notes = ooEl("notes").value.trim();
+
+    e.target.disabled = true;
+    e.target.textContent = "Saving...";
+    try {
+      const docRef = await addDoc(collection(db, OO_COLLECTION), {
+        ...oo.data,
+        plan: "one-on-one",
+        weeks: 4,
+        sessionsPerWeek: 3,
+        priceNGN: OO_PRICE_NGN,
+        status: "in_progress",
+        createdAt: serverTimestamp()
+      });
+      oo.docId = docRef.id;
+    } catch (err) {
+      console.error("Could not save one-on-one registration:", err);
+      // Non-fatal: still let them continue through the flow.
+    }
+    e.target.disabled = false;
+    e.target.textContent = "Continue";
+    showStep(15);
+  });
+
+  // Step 15: consent
+  ooStep(15).querySelector("[data-back]").addEventListener("click", () => showStep(14));
+  async function ooUpdateLead(fields) {
+    if (!oo.docId) return;
+    try { await updateDoc(doc(db, OO_COLLECTION, oo.docId), fields); }
+    catch (err) { console.error("Could not update one-on-one registration:", err); }
+  }
+  ooEl("consentYes").addEventListener("click", () => {
+    ooUpdateLead({ consent: true });
+    ooEl("payName").textContent = oo.data.name;
+    ooEl("payEmail").textContent = oo.data.email;
+    showStep(16);
+  });
+  ooEl("consentNo").addEventListener("click", () => {
+    ooUpdateLead({ consent: false });
+    showStep(18);
+  });
+
+  // Step 16: payment
+  const ooPayStatus = ooEl("payStatus");
+  function setOoPayStatus(msg, kind) {
+    ooPayStatus.textContent = msg;
+    ooPayStatus.className = "status-message" + (msg ? " is-visible" : "") + (kind ? " is-" + kind : "");
+  }
+  ooEl("payBtn").addEventListener("click", () => {
+    if (typeof PaystackPop === "undefined") {
+      setOoPayStatus("Payment couldn't load. Please refresh and try again.", "error");
+      return;
+    }
+    const reference = "OOO_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
+    const handler = PaystackPop.setup({
+      key: PAYSTACK_PUBLIC_KEY,
+      email: oo.data.email,
+      amount: OO_PRICE_NGN * 100,
+      currency: "NGN",
+      ref: reference,
+      metadata: { name: oo.data.name, phone: oo.data.phone, plan: "one-on-one" },
+      callback: function (response) { verifyOoPayment(response.reference); },
+      onClose: function () {
+        setOoPayStatus("No worries. Click the button above whenever you're ready.", "pending");
+      }
+    });
+    handler.openIframe();
+  });
+  async function verifyOoPayment(reference) {
+    setOoPayStatus("Confirming your payment...", "pending");
+    try {
+      const res = await fetch("/.netlify/functions/verify-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reference, registrant: oo.data, plan: "one-on-one", amount: OO_PRICE_NGN })
+      });
+      const result = await res.json();
+      if (result.verified) {
+        await ooUpdateLead({ status: "paid", paidAt: serverTimestamp(), paystackReference: reference });
+        ooEl("successEmail").textContent = oo.data.email;
+        setOoPayStatus("", "");
+        showStep(17);
+      } else {
+        setOoPayStatus("We couldn't confirm this payment yet. If you were charged, contact us with reference " + reference + ".", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      setOoPayStatus("Something went wrong confirming your payment. If you were charged, contact us with reference " + reference + ".", "error");
+    }
+  }
+
+  // Step 18: decline reason
+  ooEl("declineSubmitBtn").addEventListener("click", async (e) => {
+    const val = ooEl("declineReason").value.trim();
+    if (val.length < 2) { setError("oo-field-decline", true); return; }
+    setError("oo-field-decline", false);
+    e.target.disabled = true;
+    e.target.textContent = "Sending...";
+    await ooUpdateLead({ declineReason: val });
+    e.target.disabled = false;
+    e.target.textContent = "Send";
+    showStep(19);
+  });
+  ooEl("reconsiderBtn").addEventListener("click", () => showStep(15));
 
   showStep(0);
 </script>
